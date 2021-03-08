@@ -21,14 +21,14 @@ sys.path.insert(0, os.path.abspath('..'))
 from configparser import ConfigParser
 conf = ConfigParser()
 conf.read([os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')])
-setup = dict(conf.items('metadata'))
+setup_cfg = dict(conf.items('metadata'))
 
-project = setup['name']
+project = setup_cfg['name']
 copyright = '2021, Multiple Authors'
 author = 'Multiple Authors'
 
 # The full version, including alpha/beta/rc tags
-release = setup['version']
+release = setup_cfg['version']
 
 
 # -- General configuration ---------------------------------------------------
