@@ -17,12 +17,18 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Composition Statistics'
+# Get configuration information from setup.cfg
+from configparser import ConfigParser
+conf = ConfigParser()
+conf.read([os.path.join(os.path.dirname(__file__), '..', 'setup.cfg')])
+setup = dict(conf.items('metadata'))
+
+project = setup['name']
 copyright = '2021, Multiple Authors'
 author = 'Multiple Authors'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = setup['version']
 
 
 # -- General configuration ---------------------------------------------------
