@@ -15,7 +15,7 @@ import numpy.testing as npt
 from composition_stats import (closure, multiplicative_replacement, perturb,
                                perturb_inv, power, inner, clr, clr_inv, ilr,
                                ilr_inv, alr, alr_inv, sbp_basis,
-                               _gram_schmidt_basis, centralize)
+                               _gram_schmidt_basis, center, centralize)
 
 
 class CompositionTests(TestCase):
@@ -251,7 +251,7 @@ class CompositionTests(TestCase):
 
     def test_clr_inv(self):
         npt.assert_allclose(clr_inv(self.rdata1), self.ortho1)
-        npt.assert_allclose(clr(clr_inv(self.rdata1)), self.rdata1, rtol=1e-6)
+        npt.assert_allclose(clr(clr_inv(self.rdata1)), self.rdata1)
 
         # make sure that inplace modification is not occurring
         clr_inv(self.rdata1)
@@ -261,6 +261,25 @@ class CompositionTests(TestCase):
                                        -0.81649658, 0.],
                                       [0.28867513, 0.28867513,
                                        0.28867513, -0.8660254]]))
+
+    def test_center(self):
+        cmat = center(closure(self.cdata1))
+        npt.assert_allclose(cmat,
+                            np.array([0.31010205, 0.31010205, 0.37979590]))
+        cmat = center(closure(self.cdata5))
+        npt.assert_allclose(cmat,
+                            np.array([0.31010205, 0.31010205, 0.37979590]))
+
+        with self.assertRaises(ValueError):
+            centralize(self.bad1)
+        with self.assertRaises(ValueError):
+            centralize(self.bad2)
+
+        # make sure that inplace modification is not occurring
+        centralize(self.cdata1)
+        npt.assert_allclose(self.cdata1,
+                            np.array([[2, 2, 6],
+                                      [4, 4, 2]]))
 
     def test_centralize(self):
         cmat = centralize(closure(self.cdata1))

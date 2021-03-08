@@ -44,6 +44,8 @@ The following functions are provided:
 | ``alr_inv``                       | Performs inverse additive log ratio      |
 |                                   | transform.                               |
 +-----------------------------------+------------------------------------------+
+| ``center``                        | Computes the geometric average of data.  |
++-----------------------------------+------------------------------------------+
 | ``centralize``                    | Center data around its geometric         |
 |                                   | average.                                 |
 +-----------------------------------+------------------------------------------+
@@ -53,8 +55,8 @@ The following functions are provided:
 
 Please see the `documentation`_ for details and a complete function reference.
 
-This is a straightforward fork of the essential compositional data functions of
-the ``skbio.stats.composition`` module from `scikit-bio`_.
+This is a fork of the essential compositional data functions of the
+``skbio.stats.composition`` module from `scikit-bio`_.
 
 .. _documentation: https://composition-stats.readthedocs.io/
 .. _scikit-bio: https://github.com/biocore/scikit-bio

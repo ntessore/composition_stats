@@ -1,6 +1,5 @@
-# The following parts are originally part of scikit-bio, with copyright notice
-# as reproduced below.  The original COPYING.txt file can be found under
-# licenses/scikit-bio.txt.
+# Based on the `skbio.stats.composition` module, with below copyright notice.
+# The original COPYING.txt file can be found under licenses/scikit-bio.txt.
 # ----------------------------------------------------------------------------
 # Copyright (c) 2013--, scikit-bio development team.
 #
@@ -64,6 +63,7 @@ Functions
    ilr_inv
    alr
    alr_inv
+   center
    centralize
    sbp_basis
 
@@ -761,6 +761,36 @@ def alr_inv(mat, denominator_idx=0):
     else:
         raise ValueError("mat must be either 1D or 2D")
     return comp
+
+
+def center(mat):
+    """
+    Compute the geometric average of data.
+
+    Parameters
+    ----------
+    mat : array_like
+       a matrix of proportions where
+       rows = compositions
+       columns = components
+
+    Returns
+    -------
+    array_like, np.float64
+       central composition
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from composition_stats import center
+    >>> X = np.array([[.1,.3,.4, .2],[.2,.2,.2,.4]])
+    >>> center(X)
+    array([ 0.14854315,  0.25728427,  0.29708629,  0.29708629])
+
+    """
+    mat = closure(mat)
+    cen = scipy.stats.gmean(mat, axis=0)
+    return closure(cen)
 
 
 def centralize(mat):

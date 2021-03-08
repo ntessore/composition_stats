@@ -1,5 +1,6 @@
 __pycache__
 .tox
 *.egg-info
+dist
 docs/_build
 docs/composition_stats.*.rst
