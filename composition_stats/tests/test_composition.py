@@ -161,8 +161,8 @@ class CompositionTests(TestCase):
         npt.assert_allclose(b, 0.66666666666666663)
 
         # Make sure that orthogonality holds
-        npt.assert_allclose(inner(closure(self.ortho1), closure(self.ortho1)), np.identity(3),
-                            rtol=1e-04, atol=1e-06)
+        npt.assert_allclose(inner(closure(self.ortho1), closure(self.ortho1)),
+                            np.identity(3), rtol=1e-04, atol=1e-06)
 
         with self.assertRaises(ValueError):
             inner(closure(self.cdata1), closure(self.cdata8))
@@ -352,7 +352,8 @@ class CompositionTests(TestCase):
                           [1.42424242, 9.72727273],
                           [1.56565657, 9.63636364]])
 
-        res = ilr_inv(np.atleast_2d(ilr(closure(table), basis=basis)).T, basis=basis)
+        res = ilr_inv(np.atleast_2d(ilr(closure(table), basis=basis)).T,
+                      basis=basis)
         npt.assert_allclose(res, closure(table.squeeze()))
 
     def test_ilr_inv_basis(self):
