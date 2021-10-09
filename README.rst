@@ -56,7 +56,9 @@ The following functions are provided:
 Please see the `documentation`_ for details and a complete function reference.
 
 This is a fork of the essential compositional data functions of the
-``skbio.stats.composition`` module from `scikit-bio`_.
+``skbio.stats.composition`` module from `scikit-bio`_.  However, for reasons of
+performance, the functions in this module expect inputs where compositions
+already sum to unity, and do not call `closure()` on inputs internally.
 
 .. _documentation: https://composition-stats.readthedocs.io/
 .. _scikit-bio: https://github.com/biocore/scikit-bio
