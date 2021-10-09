@@ -93,9 +93,9 @@ equivalent:
 
 Suppose that an antibiotic kills off half of the population for the
 first two species, but doesn't harm the third species. Then the
-perturbation vector would be as follows
+perturbation vector, after closure, would be as follows:
 
->>> antibiotic = np.array([1./2, 1./2, 1])
+>>> antibiotic = closure(np.array([1./2, 1./2, 1]))
 
 And the resulting perturbation would be
 
@@ -108,7 +108,7 @@ import numpy as np
 import scipy.stats
 
 
-def closure(mat, *, inplace=False):
+def closure(mat, *, out=None):
     """
     Performs closure to ensure that all elements add up to 1.
 
@@ -118,8 +118,10 @@ def closure(mat, *, inplace=False):
        a matrix of proportions where
        rows = compositions
        columns = components
-    inplace : bool, optional
-        Perform the closure operation in place, modifying the input matrix.
+    out : array_like or None, optional
+        A location into which the result is stored. If provided, it must have
+        a shape that the inputs broadcast to. If not provided or None, a
+        freshly-allocated array is returned.
 
     Returns
     -------
@@ -147,6 +149,8 @@ def closure(mat, *, inplace=False):
 
     """
     mat = np.atleast_2d(mat)
+    if out is not None:
+        out = np.atleast_2d(out)
     if np.any(mat < 0):
         raise ValueError("Cannot have negative proportions")
     if mat.ndim > 2:
@@ -154,14 +158,10 @@ def closure(mat, *, inplace=False):
     norm = mat.sum(axis=1, keepdims=True)
     if np.any(norm == 0):
         raise ValueError("Input matrix cannot have rows with all zeros")
-    if inplace:
-        mat /= norm
-    else:
-        mat = mat / norm
-    return mat.squeeze()
+    return np.divide(mat, norm, out=out).squeeze()
 
 
-def multiplicative_replacement(mat, delta=None, *, normalized=False):
+def multiplicative_replacement(mat, delta=None):
     r"""Replace all zeros with small non-zero values
 
     It uses the multiplicative replacement strategy [1]_ ,
@@ -175,13 +175,12 @@ def multiplicative_replacement(mat, delta=None, *, normalized=False):
        a matrix of proportions where
        rows = compositions and
        columns = components
+       each composition (row) must add up to unity (see :ref:`closure()`)
     delta: float, optional
        a small number to be used to replace zeros
        If delta is not specified, then the default delta is
        :math:`\delta = \frac{1}{N^2}` where :math:`N`
        is the number of components
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
 
     Returns
     -------
@@ -215,8 +214,6 @@ def multiplicative_replacement(mat, delta=None, *, normalized=False):
            [ 0.0625,  0.4375,  0.4375,  0.0625]])
 
     """
-    if not normalized:
-        mat = closure(mat)
     z_mat = (mat == 0)
 
     num_feats = mat.shape[-1]
@@ -233,7 +230,7 @@ def multiplicative_replacement(mat, delta=None, *, normalized=False):
     return mat.squeeze()
 
 
-def perturb(x, y, *, normalized=False):
+def perturb(x, y):
     r"""
     Performs the perturbation operation.
 
@@ -257,12 +254,12 @@ def perturb(x, y, *, normalized=False):
         a matrix of proportions where
         rows = compositions and
         columns = components
+        each composition (row) must add up to unity (see :ref:`closure()`)
     y : array_like, float
         a matrix of proportions where
         rows = compositions and
         columns = components
-    normalized : bool, optional
-        Indicate whether the inputs are normalized. Compute closure otherwise.
+        each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -280,12 +277,11 @@ def perturb(x, y, *, normalized=False):
     array([ 0.0625,  0.1875,  0.5   ,  0.25  ])
 
     """
-    if not normalized:
-        x, y = closure(x), closure(y)
-    return closure(x * y, inplace=True)
+    z = np.multiply(x, y)
+    return closure(z, out=z)
 
 
-def perturb_inv(x, y, *, normalized=False):
+def perturb_inv(x, y):
     r"""
     Performs the inverse perturbation operation.
 
@@ -310,12 +306,12 @@ def perturb_inv(x, y, *, normalized=False):
         a matrix of proportions where
         rows = compositions and
         columns = components
+        each composition (row) must add up to unity (see :ref:`closure()`)
     y : array_like
         a matrix of proportions where
         rows = compositions and
         columns = components
-    normalized : bool, optional
-        Indicate whether the inputs are normalized. Compute closure otherwise.
+        each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -332,12 +328,11 @@ def perturb_inv(x, y, *, normalized=False):
     >>> perturb_inv(x,y)
     array([ 0.14285714,  0.42857143,  0.28571429,  0.14285714])
     """
-    if not normalized:
-        x, y = closure(x), closure(y)
-    return closure(x / y, inplace=True)
+    z = np.divide(x, y)
+    return closure(z, out=z)
 
 
-def power(x, a, *, normalized=False):
+def power(x, a):
     r"""
     Performs the power operation.
 
@@ -361,10 +356,9 @@ def power(x, a, *, normalized=False):
         a matrix of proportions where
         rows = compositions and
         columns = components
+        each composition (row) must add up to unity (see :ref:`closure()`)
     a : float
         a scalar float
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
 
     Returns
     -------
@@ -381,12 +375,11 @@ def power(x, a, *, normalized=False):
     array([ 0.23059566,  0.25737316,  0.26488486,  0.24714631])
 
     """
-    if not normalized:
-        x = closure(x)
-    return closure(x**a, inplace=True).squeeze()
+    y = np.power(x, a)
+    return closure(y, out=y)
 
 
-def inner(x, y, *, normalized=False):
+def inner(x, y):
     r"""
     Calculates the Aitchson inner product.
 
@@ -403,12 +396,12 @@ def inner(x, y, *, normalized=False):
         a matrix of proportions where
         rows = compositions and
         columns = components
+        each composition (row) must add up to unity (see :ref:`closure()`)
     y : array_like
         a matrix of proportions where
         rows = compositions and
         columns = components
-    normalized : bool, optional
-        Indicate whether the inputs are normalized. Compute closure otherwise.
+        each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -424,13 +417,11 @@ def inner(x, y, *, normalized=False):
     >>> inner(x, y)  # doctest: +ELLIPSIS
     0.2107852473...
     """
-    if not normalized:
-        x, y = closure(x), closure(y)
     a, b = clr(x), clr(y)
     return a.dot(b.T)
 
 
-def clr(mat, *, normalized=False):
+def clr(mat):
     r"""
     Performs centre log ratio transformation.
 
@@ -457,8 +448,7 @@ def clr(mat, *, normalized=False):
        a matrix of proportions where
        rows = compositions and
        columns = components
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
+       each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -474,8 +464,6 @@ def clr(mat, *, normalized=False):
     array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628])
 
     """
-    if not normalized:
-        mat = closure(mat)
     lmat = np.log(mat)
     gm = lmat.mean(axis=-1, keepdims=True)
     return (lmat - gm).squeeze()
@@ -505,6 +493,7 @@ def clr_inv(mat):
        a matrix of real values where
        rows = transformed compositions and
        columns = components
+       each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -520,10 +509,11 @@ def clr_inv(mat):
     array([ 0.21383822,  0.26118259,  0.28865141,  0.23632778])
 
     """
-    return closure(np.exp(mat), inplace=True)
+    emat = np.exp(mat)
+    return closure(emat, out=emat)
 
 
-def ilr(mat, basis=None, check=True, *, normalized=False):
+def ilr(mat, basis=None, check=True):
     r"""
     Performs isometric log ratio transformation.
 
@@ -551,13 +541,12 @@ def ilr(mat, basis=None, check=True, *, normalized=False):
        a matrix of proportions where
        rows = compositions and
        columns = components
+       each composition (row) must add up to unity (see :ref:`closure()`)
     basis: numpy.ndarray, float, optional
         orthonormal basis for Aitchison simplex
         defaults to J.J.Egozcue orthonormal basis.
     check: bool
         Specifies if the basis is orthonormal.
-    normalized : bool, optional
-        Indicate whether the matrix is normalized.  Compute closure otherwise.
 
     Examples
     --------
@@ -574,8 +563,6 @@ def ilr(mat, basis=None, check=True, *, normalized=False):
     the dimensions of the basis needs be `D-1 x D`, where rows represent
     basis vectors, and the columns represent proportions.
     """
-    if not normalized:
-        mat = closure(mat)
     if basis is None:
         basis = clr_inv(_gram_schmidt_basis(mat.shape[-1]))
     else:
@@ -617,6 +604,7 @@ def ilr_inv(mat, basis=None, check=True):
        a matrix of transformed proportions where
        rows = compositions and
        columns = components
+       each composition (row) must add up to unity (see :ref:`closure()`)
 
     basis: numpy.ndarray, float, optional
         orthonormal basis for Aitchison simplex
@@ -658,7 +646,7 @@ def ilr_inv(mat, basis=None, check=True):
     return clr_inv(np.dot(mat, basis))
 
 
-def alr(mat, denominator_idx=0, *, normalized=False):
+def alr(mat, denominator_idx=0):
     r"""
     Performs additive log ratio transformation.
 
@@ -684,12 +672,11 @@ def alr(mat, denominator_idx=0, *, normalized=False):
        a matrix of proportions where
        rows = compositions and
        columns = components
+       each composition (row) must add up to unity (see :ref:`closure()`)
     denominator_idx: int
        the index of the column (2D-matrix) or position (vector) of
        `mat` which should be used as the reference composition. By default
        `denominator_idx=0` to specify the first column or position.
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
 
     Returns
     -------
@@ -705,8 +692,6 @@ def alr(mat, denominator_idx=0, *, normalized=False):
     >>> alr(x)
     array([ 1.09861229,  1.38629436,  0.69314718])
     """
-    if not normalized:
-        mat = closure(mat)
     if mat.ndim == 2:
         mat_t = mat.T
         numerator_idx = list(range(0, mat_t.shape[0]))
@@ -789,7 +774,7 @@ def alr_inv(mat, denominator_idx=0):
     return comp
 
 
-def center(mat, *, normalized=False):
+def center(mat):
     """
     Compute the geometric average of data.
 
@@ -799,8 +784,7 @@ def center(mat, *, normalized=False):
        a matrix of proportions where
        rows = compositions
        columns = components
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
+       each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -816,13 +800,11 @@ def center(mat, *, normalized=False):
     array([ 0.14854315,  0.25728427,  0.29708629,  0.29708629])
 
     """
-    if not normalized:
-        mat = closure(mat)
     cen = scipy.stats.gmean(mat, axis=0)
-    return closure(cen, inplace=True)
+    return closure(cen, out=cen)
 
 
-def centralize(mat, *, normalized=False):
+def centralize(mat):
     r"""Center data around its geometric average.
 
     Parameters
@@ -831,8 +813,7 @@ def centralize(mat, *, normalized=False):
        a matrix of proportions where
        rows = compositions and
        columns = components
-    normalized : bool, optional
-        Indicate whether the matrix is normalized. Compute closure otherwise.
+       each composition (row) must add up to unity (see :ref:`closure()`)
 
     Returns
     -------
@@ -849,8 +830,6 @@ def centralize(mat, *, normalized=False):
            [ 0.32495488,  0.18761279,  0.16247744,  0.32495488]])
 
     """
-    if not normalized:
-        mat = closure(mat)
     cen = scipy.stats.gmean(mat, axis=0)
     return perturb_inv(mat, cen)
 

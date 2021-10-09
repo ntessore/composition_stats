@@ -110,11 +110,8 @@ class CompositionTests(TestCase):
                             np.array([[.2, .2, .6],
                                       [.4, .4, .2]]))
 
-        with self.assertRaises(ValueError):
-            perturb(closure(self.cdata5), self.bad1)
-
         # make sure that inplace modification is not occurring
-        perturb(self.cdata2, [1, 2, 3])
+        perturb(closure(self.cdata2), closure([1, 2, 3]))
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
     def test_power(self):
@@ -131,11 +128,8 @@ class CompositionTests(TestCase):
                             np.array([[.04/.44, .04/.44, .36/.44],
                                       [.16/.36, .16/.36, .04/.36]]))
 
-        with self.assertRaises(ValueError):
-            power(self.bad1, 2)
-
         # make sure that inplace modification is not occurring
-        power(self.cdata2, 4)
+        power(closure(self.cdata2), 4)
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
     def test_perturb_inv(self):
@@ -154,30 +148,27 @@ class CompositionTests(TestCase):
         imat = perturb(closure(self.cdata1), closure([10, 10, 10]))
         npt.assert_allclose(pmat, imat)
 
-        with self.assertRaises(ValueError):
-            perturb_inv(closure(self.cdata1), self.bad1)
-
         # make sure that inplace modification is not occurring
-        perturb_inv(self.cdata2, [1, 2, 3])
+        perturb_inv(closure(self.cdata2), closure([1, 2, 3]))
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
     def test_inner(self):
-        a = inner(self.cdata5, self.cdata5)
+        a = inner(closure(self.cdata5), closure(self.cdata5))
         npt.assert_allclose(a, np.array([[0.80463264, -0.50766667],
                                          [-0.50766667, 0.32030201]]))
 
-        b = inner(self.cdata7, self.cdata7)
+        b = inner(closure(self.cdata7), closure(self.cdata7))
         npt.assert_allclose(b, 0.66666666666666663)
 
         # Make sure that orthogonality holds
-        npt.assert_allclose(inner(self.ortho1, self.ortho1), np.identity(3),
+        npt.assert_allclose(inner(closure(self.ortho1), closure(self.ortho1)), np.identity(3),
                             rtol=1e-04, atol=1e-06)
 
         with self.assertRaises(ValueError):
-            inner(self.cdata1, self.cdata8)
+            inner(closure(self.cdata1), closure(self.cdata8))
 
         # make sure that inplace modification is not occurring
-        inner(self.cdata1, self.cdata1)
+        inner(closure(self.cdata1), closure(self.cdata1))
         npt.assert_allclose(self.cdata1,
                             np.array([[2, 2, 6],
                                       [4, 4, 2]]))
@@ -207,18 +198,13 @@ class CompositionTests(TestCase):
                                        0.266667, 0.333333]]),
                             rtol=1e-5, atol=1e-5)
 
-        with self.assertRaises(ValueError):
-            multiplicative_replacement(self.bad1)
-        with self.assertRaises(ValueError):
-            multiplicative_replacement(self.bad2)
-
         # make sure that inplace modification is not occurring
-        multiplicative_replacement(self.cdata4)
+        multiplicative_replacement(closure(self.cdata4))
         npt.assert_allclose(self.cdata4, np.array([1, 2, 3, 0, 5]))
 
     def multiplicative_replacement_warning(self):
         with self.assertRaises(ValueError):
-            multiplicative_replacement([0, 1, 2], delta=1)
+            multiplicative_replacement(closure([0, 1, 2]), delta=1)
 
     def test_clr(self):
         cmat = clr(closure(self.cdata1))
@@ -240,13 +226,9 @@ class CompositionTests(TestCase):
         npt.assert_allclose(cmat,
                             [np.log(A / np.exp(np.log(A).mean())),
                              np.log(B / np.exp(np.log(B).mean()))])
-        with self.assertRaises(ValueError):
-            clr(self.bad1)
-        with self.assertRaises(ValueError):
-            clr(self.bad2)
 
         # make sure that inplace modification is not occurring
-        clr(self.cdata2)
+        clr(closure(self.cdata2))
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
     def test_clr_inv(self):
@@ -270,13 +252,8 @@ class CompositionTests(TestCase):
         npt.assert_allclose(cmat,
                             np.array([0.31010205, 0.31010205, 0.37979590]))
 
-        with self.assertRaises(ValueError):
-            centralize(self.bad1)
-        with self.assertRaises(ValueError):
-            centralize(self.bad2)
-
         # make sure that inplace modification is not occurring
-        centralize(self.cdata1)
+        center(closure(self.cdata1))
         npt.assert_allclose(self.cdata1,
                             np.array([[2, 2, 6],
                                       [4, 4, 2]]))
@@ -291,13 +268,8 @@ class CompositionTests(TestCase):
                             np.array([[0.22474487, 0.22474487, 0.55051026],
                                       [0.41523958, 0.41523958, 0.16952085]]))
 
-        with self.assertRaises(ValueError):
-            centralize(self.bad1)
-        with self.assertRaises(ValueError):
-            centralize(self.bad2)
-
         # make sure that inplace modification is not occurring
-        centralize(self.cdata1)
+        centralize(closure(self.cdata1))
         npt.assert_allclose(self.cdata1,
                             np.array([[2, 2, 6],
                                       [4, 4, 2]]))
@@ -308,14 +280,14 @@ class CompositionTests(TestCase):
                                       np.array([0.70710678, 0.40824829]))
 
         # Should give same result as inner
-        npt.assert_allclose(ilr(self.ortho1), np.identity(3),
+        npt.assert_allclose(ilr(closure(self.ortho1)), np.identity(3),
                             rtol=1e-04, atol=1e-06)
 
         with self.assertRaises(ValueError):
-            ilr(self.cdata1, basis=self.cdata1)
+            ilr(closure(self.cdata1), basis=self.cdata1)
 
         # make sure that inplace modification is not occurring
-        ilr(self.cdata1)
+        ilr(closure(self.cdata1))
         npt.assert_allclose(self.cdata1,
                             np.array([[2, 2, 6],
                                       [4, 4, 2]]))
@@ -327,7 +299,7 @@ class CompositionTests(TestCase):
                           [1.42424242, 9.72727273],
                           [1.56565657, 9.63636364]])
         basis = np.array([[0.80442968, 0.19557032]])
-        res = ilr(table, basis=basis)
+        res = ilr(closure(table), basis=basis)
         exp = np.array([np.log(1/10)*np.sqrt(1/2),
                         np.log(1.14141414 / 9.90909091)*np.sqrt(1/2),
                         np.log(1.28282828 / 9.81818182)*np.sqrt(1/2),
@@ -344,7 +316,7 @@ class CompositionTests(TestCase):
                           [1.56565657, 9.63636364]])
         basis = np.array([0.80442968, 0.19557032])
         with self.assertRaises(ValueError):
-            ilr(table, basis=basis)
+            ilr(closure(table), basis=basis)
 
     def test_ilr_inv(self):
         mat = closure(self.cdata7)
@@ -380,7 +352,7 @@ class CompositionTests(TestCase):
                           [1.42424242, 9.72727273],
                           [1.56565657, 9.63636364]])
 
-        res = ilr_inv(np.atleast_2d(ilr(table, basis=basis)).T, basis=basis)
+        res = ilr_inv(np.atleast_2d(ilr(closure(table), basis=basis)).T, basis=basis)
         npt.assert_allclose(res, closure(table.squeeze()))
 
     def test_ilr_inv_basis(self):
@@ -423,13 +395,8 @@ class CompositionTests(TestCase):
         alr1d_method = alr(comp2, denominator_idx=1)
         npt.assert_allclose(alr1d_byhand, alr1d_method)
 
-        with self.assertRaises(ValueError):
-            alr(self.bad1)
-        with self.assertRaises(ValueError):
-            alr(self.bad2)
-
         # make sure that inplace modification is not occurring
-        alr(self.cdata2)
+        alr(closure(self.cdata2))
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
     def test_alr_inv(self):
@@ -465,9 +432,6 @@ class CompositionTests(TestCase):
                                        -0.81649658, 0.],
                                       [0.28867513, 0.28867513,
                                        0.28867513, -0.8660254]]))
-
-        with self.assertRaises(ValueError):
-            alr_inv(self.bad2)
 
     def test_sbp_basis_gram_schmidt(self):
         gsbasis = clr_inv(_gram_schmidt_basis(5))
