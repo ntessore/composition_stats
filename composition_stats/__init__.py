@@ -467,14 +467,14 @@ def clr(mat, ignore_zero=False):
 
     """
     if ignore_zero:
-        msk = mat.astype(bool)
-        lmat = np.log(mat, where=msk)
-        gm = lmat.mean(axis=-1, keepdims=True, where=msk)
-        return np.where(msk, (lmat - gm).squeeze(), 0.)
+        where = (mat != 0)
+        out = np.zeros_like(mat, dtype=float)
     else:
-        lmat = np.log(mat)
-        gm = lmat.mean(axis=-1, keepdims=True)
-        return (lmat - gm).squeeze()
+        where = True
+        out = None
+    lmat = np.log(mat, where=where, out=out)
+    gm = lmat.mean(axis=-1, keepdims=True, where=where)
+    return np.subtract(lmat, gm, where=where, out=lmat).squeeze()
 
 
 def clr_inv(mat):
