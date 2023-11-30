@@ -449,9 +449,8 @@ def clr(mat, ignore_zero=False):
        rows = compositions and
        columns = components
        each composition (row) must add up to unity (see :ref:`closure()`)
-    ignore_zero : bool
-        whether to ignore zeros in ``mat``. This reproduces the behavior of the
-        ``compositions`` R package.
+    ignore_zero : bool, optional
+       whether to ignore zeros in ``mat`` (default: false)
 
     Returns
     -------
