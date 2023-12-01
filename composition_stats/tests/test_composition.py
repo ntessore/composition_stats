@@ -232,7 +232,8 @@ class CompositionTests(TestCase):
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
         # test ignore_zero
-        with self.assertWarnsRegex(RuntimeWarning, 'divide by zero encountered'):
+        msg = 'divide by zero encountered'
+        with self.assertWarnsRegex(RuntimeWarning, msg):
             cmat = clr(closure(self.cdata3), ignore_zero=False)
             assert not np.all(np.isfinite(cmat))
         cmat = clr(closure(self.cdata3), ignore_zero=True)
