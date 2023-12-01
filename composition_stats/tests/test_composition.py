@@ -231,6 +231,15 @@ class CompositionTests(TestCase):
         clr(closure(self.cdata2))
         npt.assert_allclose(self.cdata2, np.array([2, 2, 6]))
 
+        # test ignore_zero
+        msg = 'divide by zero encountered'
+        with self.assertWarnsRegex(RuntimeWarning, msg):
+            cmat = clr(closure(self.cdata3), ignore_zero=False)
+            assert not np.all(np.isfinite(cmat))
+        cmat = clr(closure(self.cdata3), ignore_zero=True)
+        assert np.all(np.isfinite(cmat))
+        npt.assert_allclose(cmat[0, 0], -0.85029934)
+
     def test_clr_inv(self):
         npt.assert_allclose(clr_inv(self.rdata1), self.ortho1)
         npt.assert_array_almost_equal(clr(clr_inv(self.rdata1)), self.rdata1)

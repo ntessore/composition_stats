@@ -421,7 +421,7 @@ def inner(x, y):
     return a.dot(b.T)
 
 
-def clr(mat):
+def clr(mat, ignore_zero=False):
     r"""
     Performs centre log ratio transformation.
 
@@ -449,6 +449,8 @@ def clr(mat):
        rows = compositions and
        columns = components
        each composition (row) must add up to unity (see :ref:`closure()`)
+    ignore_zero : bool, optional
+       whether to ignore zeros in ``mat`` (default: false)
 
     Returns
     -------
@@ -464,9 +466,15 @@ def clr(mat):
     array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628])
 
     """
-    lmat = np.log(mat)
-    gm = lmat.mean(axis=-1, keepdims=True)
-    return (lmat - gm).squeeze()
+    if ignore_zero:
+        where = (mat != 0)
+        out = np.zeros_like(mat, dtype=float)
+    else:
+        where = True
+        out = None
+    lmat = np.log(mat, where=where, out=out)
+    gm = lmat.mean(axis=-1, keepdims=True, where=where)
+    return np.subtract(lmat, gm, where=where, out=lmat).squeeze()
 
 
 def clr_inv(mat):
